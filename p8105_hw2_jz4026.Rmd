@@ -91,3 +91,76 @@ nyc_transit_tidy |>
 
 17 stations are ADA compliant.
 
+## Problem 2
+```{r}
+mr_trash_wheel =
+  read_excel(
+    "data/202610 Trash Wheel Collection Data.xlsx",
+    sheet = "Mr. Trash Wheel",
+    range = cell_cols("A:N")
+  ) |>
+  janitor::clean_names() |>
+  drop_na(dumpster) |>
+  mutate(
+    year = as.integer(year),
+    sports_balls = as.integer(round(sports_balls)),
+    trash_wheel = "Mr. Trash Wheel"
+  )
+
+professor_trash_wheel =
+  read_excel(
+    "data/202610 Trash Wheel Collection Data.xlsx",
+    sheet = "Professor Trash Wheel",
+    range = cell_cols("A:M"),
+    na = "dive"
+  ) |>
+  janitor::clean_names() |>
+  drop_na(dumpster) |>
+  mutate(
+    year = as.integer(year),
+    trash_wheel = "Professor Trash Wheel"
+  )
+
+gwynnda =
+  read_excel(
+    "data/202610 Trash Wheel Collection Data.xlsx",
+    sheet = "Gwynnda the Good Wheel of the W",
+    range = cell_cols("A:L")
+  ) |>
+  janitor::clean_names() |>
+  drop_na(dumpster) |>
+  mutate(
+    year = as.integer(year),
+    trash_wheel = "Gwynnda"
+  )
+
+trash_wheel_tidy =
+  bind_rows(
+    mr_trash_wheel,
+    professor_trash_wheel,
+    gwynnda
+  )
+
+trash_wheel_tidy
+```
+
+```{r}
+professor_total_weight =
+  trash_wheel_tidy |>
+  filter(trash_wheel == "Professor Trash Wheel") |>
+  summarize(total_weight = sum(weight_tons, na.rm = TRUE))
+
+gwynnda_cigarette_butts =
+  trash_wheel_tidy |>
+  filter(
+    trash_wheel == "Gwynnda",
+    year == 2022,
+    month == "June"
+  ) |>
+  summarize(total_butts = sum(cigarette_butts, na.rm = TRUE))
+
+professor_total_weight
+
+gwynnda_cigarette_butts
+```
+The combined dataset contains 1,269 observations and 15 variables, including key varibles like dumpster, month, year, and weight. Professor Trash Wheel collected 295 tons of trash. 18,120 cigarette butts were collected by Gwynnda in June 2022.
