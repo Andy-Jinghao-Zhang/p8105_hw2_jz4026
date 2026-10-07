@@ -1,0 +1,93 @@
+---
+title: "Homework 2"
+author: "Jinghao Zhang"
+date: "2026-10-07"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+
+library(tidyverse)
+library(readxl)
+```
+
+## Problem 1
+
+```{r}
+nyc_transit =
+  read_csv("data/NYC_Transit_Subway_Entrance_And_Exit_Data.csv") |>
+  janitor::clean_names() |>
+  select(
+    line,
+    station_name,
+    station_latitude,
+    station_longitude,
+    route1:route11,
+    entry,
+    vending,
+    entrance_type,
+    ada
+  ) |>
+  mutate(
+    entry = recode_values(
+      entry,
+      "YES" ~ TRUE,
+      "NO" ~ FALSE
+    )
+  )
+```
+
+This dataset includes line, station name, latitude and longitude, routes, entry, vending, entrance type, and ADA. I selected the variables needed for the analysis, and converted `entry` from YES/NO to TRUE/FALSE. The cleaned dataset has 1868 rows and 19 columns. The data are not tidy because the routes are stored in multiple columns.
+
+```{r}
+nyc_transit |>
+  distinct(line, station_name)
+```
+
+
+```{r}
+nyc_transit |>
+  filter(ada == TRUE) |>
+  distinct(line, station_name)
+```
+
+
+```{r}
+nyc_transit |>
+  filter(vending == "NO") |>
+  filter(entry == TRUE)
+```
+
+proportion of station entrances / exits without vending allow entrance = 69/183 = 37.7%
+
+```{r}
+nyc_transit_tidy = 
+  nyc_transit |>
+  mutate(
+    across(route1:route11, as.character)) |>
+  pivot_longer(
+    route1:route11,
+    names_to = "route_number",
+    names_prefix = "route",
+    values_to = "route_name")
+
+nyc_transit_tidy
+```
+
+```{r}
+nyc_transit_tidy |>
+  filter(route_name == "A") |>
+  distinct(line, station_name)
+```
+
+there are 60 distinct stations.
+
+```{r}
+nyc_transit_tidy |>
+  filter(route_name == "A", ada == TRUE) |>
+  distinct(line, station_name)
+```
+
+17 stations are ADA compliant.
+
